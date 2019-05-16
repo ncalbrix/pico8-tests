@@ -8,6 +8,7 @@ end
 
 function _draw()
 	bckgrnd()
+ print(player:nb_ffs(),60, 10, 5)
 	player:draw()
 	foregrnd()
 end
@@ -40,9 +41,16 @@ player = {
 	end,
 	
 	
+	nb_ffs=function(self)
+		return #self.ffs
+	end,
+	
 	update_ffs=function(self)
 		for ff in all(self.ffs) do
 			ff:update()
+			if (ff.life == 0) then
+				del(self.ffs, ff)
+			end
 		end
 	end,
 	
