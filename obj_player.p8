@@ -97,14 +97,16 @@ end
 -- force field class
 
 ff_col = 9
+ff_base_life=150
 
 function new_ff(_x,_y,_r)
+	sfx(0)
 	return {
 		-- attr
 		x=_x,
 		y=_y,
 		r=_r,
-		life=150,
+		life=ff_base_life,
 		
 		-- outer methods
 		draw=function(self)
