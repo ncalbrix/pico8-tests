@@ -8,7 +8,8 @@ end
 
 function _draw()
 	bckgrnd()
- print(player:nb_ffs(),60, 10, 5)
+ print(player:nb_ffs(),60,10,5)
+ print(player.charge,60,17,5)
 	player:draw()
 	foregrnd()
 end
@@ -19,11 +20,14 @@ end
 -->8
 -- player class
 
+cooldown = 20
+
 player = {
 	--attr
 	x=64,
 	y=64,
 	s=1,
+	charge=0,
 	ffs={},
 	
 	--inner methods
@@ -35,8 +39,9 @@ player = {
 	end,
 	
 	gen_ff=function(self)
-		if (btn(4)) then
+		if (btn(4) and self.charge == 0) then
 		 add(self.ffs, new_ff(self.x+3,self.y+3,10))
+		 self.charge = cooldown
 		end
 	end,
 	
@@ -54,6 +59,12 @@ player = {
 		end
 	end,
 	
+	update_charge=function(self)
+		if (self.charge > 0) then
+			self.charge -= 1
+		end
+	end,
+
 	--outer methods
 	draw=function(self)
 		spr(self.s, self.x, self.y)
@@ -66,6 +77,7 @@ player = {
 		self:move()
 		self:gen_ff()
 		self:update_ffs()
+		self:update_charge()
 	end
 }
 
