@@ -36,37 +36,30 @@ function new_network(_nodes,adj)
 			for n in all(self.nodes) do
 				n:draw()
 			end
-			for l in all(self.nodes) do
+			for l in all(self.links) do
 				l:draw()
 			end
 		end
 	}
 	
-	print('starting const')
 	--construction
-	print('adding nodes')
 	for n in all(_nodes) do
-		network.add_node(n)
-		n.set_network(network)
+		network:add_node(n)
+		n:set_network(network)
 	end
-	print('nodes added')
 	
-	print('adding links')
 	for org,dests in pairs(adj) do
 		for dst in all(dests) do
-			print('constr link')
 			l = new_link(
-				network.nodes[org],
-				network.nodes[dst]
+				network:get_node(org),
+				network:get_node(dst)
 			)
-			print('link built')
 			
-			network.add_link(l)
+			network:add_link(l)
 			l.set_network(network)
 			del(adj[dst],org)
 		end
 	end
-	print('links added')
 	
 	return network
 end
@@ -94,10 +87,10 @@ function new_node(_x,_y,_col)
 		--outer methods
 		draw=function(self)
 			rect(
-				self.x-1,
-				self.y-1,
-				self.x+1,
-				self.y+1,
+				self.x-2,
+				self.y-2,
+				self.x+2,
+				self.y+2,
 				self.col
 			)
 		end
@@ -148,9 +141,9 @@ end
 
 nodes = {
 	new_node(20,20),
-	new_node(107,107),
+	new_node(10,60),
 	new_node(107,20),
-	new_node(20,107)
+	new_node(54,107)
 }
 
 adj = {
@@ -161,12 +154,9 @@ adj = {
 }
 
 
+cls()
 net = new_network(nodes,adj)
-function _draw()
-	cls()
-	net:draw()
-	print(#net.nodes)
-end
+net:draw()
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
