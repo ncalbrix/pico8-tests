@@ -77,11 +77,27 @@ function new_node(_x,_y,_col)
 		x=_x,
 		y=_y,
 		col=_col,
+		links={},
 		network=nil,
 		
 		--inner methods
 		set_network=function(self,net)
 			self.network=net
+		end,
+		
+		add_link=function(self,link)
+			add(self.links,link)
+		end,
+
+		adjacent_nodes=function(self)
+			nodes={}
+			
+			for l in all (self.links) do
+				n = l.other_node(self)
+				add(nodes,n)
+			end
+			
+			return nodes
 		end,
 		
 		--outer methods
@@ -105,7 +121,7 @@ def_link_col=7
 function new_link(_node_1,_node_2,_col)
 	_col = (_col or def_link_col)
 	
-	return {
+	link = {
 		--attrs
 		node_1=_node_1,
 		node_2=_node_2,
@@ -115,6 +131,14 @@ function new_link(_node_1,_node_2,_col)
 		--inner methods
 		set_network=function(self,net)
 			self.network=net
+		end,
+
+		other_node=function(self,node)
+			if (self.node_1 == node) then
+				return node_2
+			else
+				return node_1
+			end
 		end,
 		
 		--outer methods
@@ -127,7 +151,12 @@ function new_link(_node_1,_node_2,_col)
 				self.col
 			)
 		end
-	}	
+	}
+	
+	link.node_1:add_link(link)
+	link.node_2:add_link(link)
+	
+	return link
 end
 
 function link_equality(link_1,link_2)
@@ -138,7 +167,6 @@ function link_equality(link_1,link_2)
 	)
 end
 -->8
-
 nodes = {
 	new_node(20,20),
 	new_node(10,60),
