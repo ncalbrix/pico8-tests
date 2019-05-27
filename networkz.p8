@@ -4,6 +4,27 @@ __lua__
 -- networkz
 -- a network/graph test
 
+function _init()
+	nodes = {
+		new_node(20,20),
+		new_node(10,60),
+		new_node(107,20),
+		new_node(54,107)
+	}
+	
+	adj = {
+		{2,4},
+		{1,3,4},
+		{2},
+		{1,2}
+	}
+	
+	cls()
+	net=new_network(nodes,adj)
+	agent=new_agent(net:get_node(1))
+	net:draw()
+	agent:draw()
+end
 -->8
 -- base classes
 
@@ -25,10 +46,12 @@ function new_network(_nodes,adj)
 		
 		add_node=function(self,node)
 			add(self.nodes,node)
+			node:set_network(self)
 		end,
 		
 		add_link=function(self,link)
 			add(self.links,link)
+			link:set_network(self)
 		end,
 		
 		--outer methods
@@ -159,6 +182,40 @@ function new_link(_node_1,_node_2,_col)
 	return link
 end
 
+
+-- agent class
+
+def_agent_col=9
+def_agent_speed=1
+def_agent_size=5
+
+function new_agent(_node,_speed,_col)
+	_speed = (_speed or def_agent_speed)
+	_col = (_col or def_agent_col)
+	
+	return {
+		--attrs
+		node=_node,
+		speed=_speed,
+		col=_col,
+		size=def_agent_size,
+		network=_node.network,
+		
+		x=_node.x,
+		y=_node.y,
+		dx=0,
+		dy=0,
+		
+		--outer methods
+		draw=function(self)
+			circ(self.x,self.y,self.size,self.col)
+		end
+	}
+end
+
+-->8
+-- utility functions
+
 function link_equality(link_1,link_2)
 	return (
 		((link_1.node_1 == link_2.node_1) and (link_1.node_2 == link_2.node_2))
@@ -166,25 +223,6 @@ function link_equality(link_1,link_2)
 		((link_1.node_1 == link_2.node_2) and (link_1.node_2 == link_2.node_1))
 	)
 end
--->8
-nodes = {
-	new_node(20,20),
-	new_node(10,60),
-	new_node(107,20),
-	new_node(54,107)
-}
-
-adj = {
-	{2,4},
-	{1,3,4},
-	{2},
-	{1,2}
-}
-
-
-cls()
-net = new_network(nodes,adj)
-net:draw()
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
