@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
--- networks
+-- networkz
 -- a network/graph test
 
 -->8
