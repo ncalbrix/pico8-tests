@@ -19,11 +19,17 @@ function _init()
 		{1,2}
 	}
 	
-	cls()
 	net=new_network(nodes,adj)
 	agent=new_agent(net:get_node(1))
+	
+	cls()
 	net:draw()
 	agent:draw()
+	
+	node_1=net:get_node(1)
+	print(node_1)
+	dest_1=node_1:rnd_adj_node()
+	print(dest_1)
 end
 -->8
 -- base classes
@@ -108,6 +114,10 @@ function new_node(_x,_y,_col)
 			self.network=net
 		end,
 		
+		get_link=function(self,idx)
+			return self.links[idx]
+		end,
+		
 		add_link=function(self,link)
 			add(self.links,link)
 		end,
@@ -121,6 +131,12 @@ function new_node(_x,_y,_col)
 			end
 			
 			return nodes
+		end,
+		
+		rnd_adj_node=function(self)
+			nb_nodes=#self.links
+			dest_idx=flr(rnd(nb_nodes))+1
+			return self:get_link(dest_idx):other_node(self)
 		end,
 		
 		--outer methods
@@ -158,9 +174,9 @@ function new_link(_node_1,_node_2,_col)
 
 		other_node=function(self,node)
 			if (self.node_1 == node) then
-				return node_2
+				return self.node_2
 			else
-				return node_1
+				return self.node_1
 			end
 		end,
 		
@@ -195,7 +211,8 @@ function new_agent(_node,_speed,_col)
 	
 	return {
 		--attrs
-		node=_node,
+		current_node=_node,
+		next_node=nil,
 		speed=_speed,
 		col=_col,
 		size=def_agent_size,
@@ -205,6 +222,12 @@ function new_agent(_node,_speed,_col)
 		y=_node.y,
 		dx=0,
 		dy=0,
+		
+		--inner methods
+		rnd_dest=function(self)
+			return self.current_node:rnd_adj_node()
+		end,
+		
 		
 		--outer methods
 		draw=function(self)
