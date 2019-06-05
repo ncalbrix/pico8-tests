@@ -20,16 +20,52 @@ function _init()
 	}
 	
 	net=new_network(nodes,adj)
-	agent=new_agent(net:get_node(1))
+	agent=new_agent(net:get_node(1),1.5)
+	agent2=new_agent(net:get_node(1),2,4)
 	
 	cls()
 	net:draw()
-	agent:draw()
-	
-	node_1=net:get_node(1)
-	print(node_1)
-	dest_1=node_1:rnd_adj_node()
-	print(dest_1)
+--	agent:draw()
+--	
+--	node_1=net:get_node(1)
+--	print(node_1)
+--	dest_1=node_1:rnd_adj_node()
+--	print(dest_1)
+--	
+--	pa(agent)
+--	agent:update()
+--	pa(agent)
+--	agent:update()
+--	pa(agent)
+--	agent:update()
+--	pa(agent)
+--	agent:update()
+--	pa(agent)
+--	agent:update()
+--	pa(agent)
+--	agent:update()
+--	pa(agent)
+end
+
+function _update()
+	net:update()
+end
+
+function _draw()
+	cls()
+	net:draw()
+end
+
+function pa(agent)
+	?agent.x..':'..agent.y..':'..agent.speed
+	?agent.dx..':'..agent.dy
+	if (agent.next_node) then
+		?agent.next_node.x..':'..agent.next_node.y
+	else
+		?agent.next_node
+	end
+	?agent.dist_to_go
+	?'-------'
 end
 -->8
 -- base classes
@@ -44,6 +80,7 @@ function new_network(_nodes,adj)
 		--attrs
 		nodes={},
 		links={},
+		agents={},
 		
 		--inner methods
 		get_node=function(self,n)
@@ -60,7 +97,17 @@ function new_network(_nodes,adj)
 			link:set_network(self)
 		end,
 		
+		add_agent=function(self,agent)
+			add(self.agents,agent)
+		end,
+		
 		--outer methods
+		update=function(self)
+			for a in all(self.agents) do
+				a:update()
+			end
+		end,
+		
 		draw=function(self)
 			for n in all(self.nodes) do
 				n:draw()
@@ -68,13 +115,16 @@ function new_network(_nodes,adj)
 			for l in all(self.links) do
 				l:draw()
 			end
+			for a in all(self.agents) do
+				a:draw()
+			end
 		end
 	}
 	
 	--construction
 	for n in all(_nodes) do
 		network:add_node(n)
-		n:set_network(network)
+--		n:set_network(network)
 	end
 	
 	for org,dests in pairs(adj) do
@@ -85,7 +135,7 @@ function new_network(_nodes,adj)
 			)
 			
 			network:add_link(l)
-			l.set_network(network)
+--			l.set_network(network)
 			del(adj[dst],org)
 		end
 	end
@@ -137,6 +187,15 @@ function new_node(_x,_y,_col)
 			nb_nodes=#self.links
 			dest_idx=flr(rnd(nb_nodes))+1
 			return self:get_link(dest_idx):other_node(self)
+		end,
+		
+		dist_to=function(self,node)
+			return vect_norm(
+				self.x,
+				self.y,
+				node.x,
+				node.y
+			)
 		end,
 		
 		--outer methods
@@ -209,14 +268,17 @@ function new_agent(_node,_speed,_col)
 	_speed = (_speed or def_agent_speed)
 	_col = (_col or def_agent_col)
 	
-	return {
+	agent = {
 		--attrs
 		current_node=_node,
 		next_node=nil,
-		speed=_speed,
+		network=_node.network,
+		
 		col=_col,
 		size=def_agent_size,
-		network=_node.network,
+		
+		speed=_speed,
+		dist_to_go=0,
 		
 		x=_node.x,
 		y=_node.y,
@@ -228,12 +290,58 @@ function new_agent(_node,_speed,_col)
 			return self.current_node:rnd_adj_node()
 		end,
 		
+		set_dest=function(self,dest)
+			self.next_node=dest
+			self.dist_to_go=self.current_node:dist_to(self.next_node)
+		end,
+		
+		move=function(self)
+			self.x+=self.dx
+			self.y+=self.dy
+		end,
+		
+		set_speed_comp=function(self)
+			local norm=vect_norm(
+				self.current_node.x,
+				self.current_node.y,
+				self.next_node.x,
+				self.next_node.y
+			)
+			local coef=(self.speed/norm)
+			local xab=self.next_node.x-self.current_node.x
+			local yab=self.next_node.y-self.current_node.y
+			
+			self.dx=coef*xab
+			self.dy=coef*yab
+		end,
 		
 		--outer methods
+		update=function(self)
+			if (not self.next_node) then
+				self:set_dest(self:rnd_dest())
+				self:set_speed_comp()
+			else
+				if (self.dist_to_go>self.speed) then
+					self:move()
+					self.dist_to_go-=self.speed
+				else
+					self.x=self.next_node.x
+					self.y=self.next_node.y
+					self.current_node=self.next_node
+					self.next_node=nil
+				end
+			end
+		end,
+		
 		draw=function(self)
 			circ(self.x,self.y,self.size,self.col)
 		end
 	}
+	
+	--construction
+	agent.network:add_agent(agent)
+	
+	return agent
 end
 
 -->8
@@ -245,6 +353,16 @@ function link_equality(link_1,link_2)
 		or
 		((link_1.node_1 == link_2.node_2) and (link_1.node_2 == link_2.node_1))
 	)
+end
+
+function vect_norm(xa,ya,xb,yb)
+	local x=xb-xa
+	x=x*x
+	
+	local y=yb-ya
+	y=y*y
+	
+	return sqrt(x+y)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
