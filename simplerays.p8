@@ -13,8 +13,9 @@ end
 
 function _draw()
 	cls()
-	c:draw()
+	rectfill(0,0,127,127,5)
 	r:draw()
+	c:draw()
 end
 -->8
 function new_caster(_x,_y)
@@ -90,6 +91,13 @@ function new_caster(_x,_y)
 			self.circ_y=pos.y
 		end,
 		
+		lines2rec=function(self)
+			line(self.x,self.y,self.rec.x0,self.rec.y0,10)
+			line(self.x,self.y,self.rec.x0,self.rec.y1,10)
+			line(self.x,self.y,self.rec.x1,self.rec.y0,10)
+			line(self.x,self.y,self.rec.x1,self.rec.y1,10)
+		end,
+		
 		--outer methods
 		update=function(self)
 			self:move()
@@ -102,6 +110,7 @@ function new_caster(_x,_y)
 		draw=function(self)
 			if (self.rec) then
 				circfill(self.circ_x,self.circ_y,1,8)
+				self:lines2rec()
 			end
 			pset(self.x,self.y,7)
 		end
@@ -122,7 +131,7 @@ function new_rectangle(_x0,_y0,_x1,_y1)
 				self.y0,
 				self.x1,
 				self.y1,
-				5
+				6
 			)
 		end
 	}
